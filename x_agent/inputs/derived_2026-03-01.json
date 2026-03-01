@@ -1,0 +1,35 @@
+{
+  "judgment_frames": [
+    {
+      "id": "jf_2026-03-01_01",
+      "timestamp_et": "2026-03-01T20:00:00",
+      "source_item_id": "optional_unique_id",
+      "frame": "What was the actual lever in this interaction, not the topic"
+    },
+    {
+      "id": "jf_2026-03-01_02",
+      "timestamp_et": "2026-03-01T20:05:00",
+      "source_item_id": "optional_unique_id",
+      "frame": "Where did I hold back clarity to keep it open ended"
+    },
+    {
+      "id": "jf_2026-03-01_03",
+      "timestamp_et": "2026-03-01T20:10:00",
+      "source_item_id": "optional_unique_id",
+      "frame": "What did I refuse to do that preserved voice integrity"
+    }
+  ],
+  "deliberate_omissions": [
+    {
+      "id": "om_2026-03-01_01",
+      "timestamp_et": "2026-03-01T20:15:00",
+      "omission": "Did not convert this into a teaching post or thread"
+    },
+    {
+      "id": "om_2026-03-01_02",
+      "timestamp_et": "2026-03-01T20:20:00",
+      "omission": "Did not add calls to action or motivational framing"
+    }
+  ],
+  "drift_flags": []
+}

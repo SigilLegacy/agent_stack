@@ -18,6 +18,12 @@ type RawItem = {
   bookmarks?: number | null;
 };
 
+type DerivedPayload = {
+  judgment_frames?: any[];
+  deliberate_omissions?: any[];
+  drift_flags?: any[];
+};
+
 function labeled(v: number | null | undefined): { value: number; label: MetricLabel } {
   if (v === null || v === undefined) return { value: 0, label: "Unavailable" };
   return { value: v, label: "Exact" };
@@ -28,10 +34,27 @@ function makeId(prefix: string, ts: string, i: number) {
   return `${prefix}_${safe}_${i}`;
 }
 
-function inferEndDateFromInputPath(inputPath: string): string | null {
-  const base = path.basename(inputPath);
+function inferDateFromWeekFilename(absInputPath: string): string | null {
+  const base = path.basename(absInputPath);
   const m = base.match(/^week_(\d{4}-\d{2}-\d{2})\.json$/);
   return m ? m[1] : null;
+}
+
+function tryLoadDerived(root: string, dateKey: string): DerivedPayload | null {
+  const p = path.join(root, "x_agent", "inputs", `derived_${dateKey}.json`);
+  if (!fs.existsSync(p)) return null;
+
+  try {
+    const raw = JSON.parse(fs.readFileSync(p, "utf8"));
+    return {
+      judgment_frames: Array.isArray(raw.judgment_frames) ? raw.judgment_frames : [],
+      deliberate_omissions: Array.isArray(raw.deliberate_omissions) ? raw.deliberate_omissions : [],
+      drift_flags: Array.isArray(raw.drift_flags) ? raw.drift_flags : []
+    };
+  } catch (e) {
+    console.error(`Failed to parse derived file: ${p}`);
+    throw e;
+  }
 }
 
 function main() {
@@ -88,8 +111,9 @@ function main() {
     };
   });
 
-  const inferred = inferEndDateFromInputPath(absIn);
-  const endDate = inferred || raw.window?.end_date || "unknown";
+  const dateKey = inferDateFromWeekFilename(absIn) || raw.window?.end_date || "unknown";
+
+  const derivedFromFile = dateKey !== "unknown" ? tryLoadDerived(ROOT, dateKey) : null;
 
   const capture = {
     schema_version: "X_AGENT_CAPTURE_v1",
@@ -97,13 +121,17 @@ function main() {
     locks_ref: "../locks/X_AGENT_LOCKS_v1.json",
     time_window: { rolling_days: 14 },
     items,
-    derived: { judgment_frames: [], deliberate_omissions: [], drift_flags: [] }
+    derived: {
+      judgment_frames: derivedFromFile?.judgment_frames || [],
+      deliberate_omissions: derivedFromFile?.deliberate_omissions || [],
+      drift_flags: derivedFromFile?.drift_flags || []
+    }
   };
 
   const runsDir = path.join(ROOT, "x_agent", "runs");
   fs.mkdirSync(runsDir, { recursive: true });
 
-  const outFile = path.join(runsDir, `capture_${endDate}.json`);
+  const outFile = path.join(runsDir, `capture_${dateKey}.json`);
   fs.writeFileSync(outFile, JSON.stringify(capture, null, 2), "utf8");
 
   console.log(`Wrote: ${outFile}`);
