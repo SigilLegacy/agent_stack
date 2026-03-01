@@ -8,7 +8,94 @@
   "time_window": {
     "rolling_days": 14
   },
-  "items": [],
+  "items": [
+    {
+      "item_id": "optional_unique_id",
+      "post_type": "post",
+      "timestamp_et": "2026-03-01T14:30:00",
+      "text": "The actual post text",
+      "context": {
+        "parent_url": null,
+        "account_handle": null
+      },
+      "media_type": "none",
+      "metrics": {
+        "impressions": {
+          "value": 1200,
+          "label": "Exact"
+        },
+        "replies": {
+          "value": 5,
+          "label": "Exact"
+        },
+        "likes": {
+          "value": 42,
+          "label": "Exact"
+        },
+        "reposts": {
+          "value": 3,
+          "label": "Exact"
+        },
+        "bookmarks": {
+          "value": 8,
+          "label": "Exact"
+        }
+      },
+      "classification": {
+        "archetype": "unclassified",
+        "topic": "unclassified"
+      },
+      "outlier": {
+        "is_outlier": false,
+        "reason": "none",
+        "note": null
+      },
+      "notes": null
+    },
+    {
+      "item_id": "optional_unique_id",
+      "post_type": "reply",
+      "timestamp_et": "2026-03-01T15:00:00",
+      "text": "The actual reply text",
+      "context": {
+        "parent_url": "https://x.com/someone/status/123",
+        "account_handle": "@someone"
+      },
+      "media_type": "none",
+      "metrics": {
+        "impressions": {
+          "value": 800,
+          "label": "Exact"
+        },
+        "replies": {
+          "value": 2,
+          "label": "Exact"
+        },
+        "likes": {
+          "value": 15,
+          "label": "Exact"
+        },
+        "reposts": {
+          "value": 1,
+          "label": "Exact"
+        },
+        "bookmarks": {
+          "value": 4,
+          "label": "Exact"
+        }
+      },
+      "classification": {
+        "archetype": "unclassified",
+        "topic": "unclassified"
+      },
+      "outlier": {
+        "is_outlier": false,
+        "reason": "none",
+        "note": null
+      },
+      "notes": null
+    }
+  ],
   "derived": {
     "judgment_frames": [],
     "deliberate_omissions": [],

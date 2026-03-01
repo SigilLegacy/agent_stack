@@ -1,8 +1,7 @@
 {
-  "window": {
-    "start_date": "YYYY-MM-DD",
-    "end_date": "YYYY-MM-DD"
-  },
-  "posts": [],
-  "replies": []
+  "window": { "start_date": "2026-02-15", "end_date": "2026-03-01" },
+  "totals": {
+    "posts": 7,
+    "replies": 19
+  }
 }

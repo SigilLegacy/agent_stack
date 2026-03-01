@@ -24,6 +24,11 @@ type DerivedPayload = {
   drift_flags?: any[];
 };
 
+type TotalsPayload = {
+  posts: number;
+  replies: number;
+};
+
 function labeled(v: number | null | undefined): { value: number; label: MetricLabel } {
   if (v === null || v === undefined) return { value: 0, label: "Unavailable" };
   return { value: v, label: "Exact" };
@@ -57,6 +62,19 @@ function tryLoadDerived(root: string, dateKey: string): DerivedPayload | null {
   }
 }
 
+function coerceTotals(raw: any): TotalsPayload | null {
+  if (!raw || typeof raw !== "object") return null;
+  if (!raw.totals || typeof raw.totals !== "object") return null;
+
+  const posts = Number(raw.totals.posts ?? 0);
+  const replies = Number(raw.totals.replies ?? 0);
+
+  return {
+    posts: Number.isFinite(posts) ? posts : 0,
+    replies: Number.isFinite(replies) ? replies : 0
+  };
+}
+
 function main() {
   const inputPathArg = process.argv[2];
 
@@ -74,10 +92,18 @@ function main() {
 
   const raw = JSON.parse(fs.readFileSync(absIn, "utf8"));
 
-  const all: RawItem[] = [
-    ...(raw.posts || []).map((x: any) => ({ ...x, post_type: "post" })),
-    ...(raw.replies || []).map((x: any) => ({ ...x, post_type: "reply" }))
-  ];
+  const dateKey = inferDateFromWeekFilename(absIn) || raw.window?.end_date || "unknown";
+  const derivedFromFile = dateKey !== "unknown" ? tryLoadDerived(ROOT, dateKey) : null;
+
+  const totals = coerceTotals(raw);
+  const totalsOnly = totals !== null;
+
+  const all: RawItem[] = totalsOnly
+    ? []
+    : [
+        ...(raw.posts || []).map((x: any) => ({ ...x, post_type: "post" })),
+        ...(raw.replies || []).map((x: any) => ({ ...x, post_type: "reply" }))
+      ];
 
   const items = all.map((x, i) => {
     const itemId = x.item_id || makeId(x.post_type, x.timestamp_et, i);
@@ -111,11 +137,7 @@ function main() {
     };
   });
 
-  const dateKey = inferDateFromWeekFilename(absIn) || raw.window?.end_date || "unknown";
-
-  const derivedFromFile = dateKey !== "unknown" ? tryLoadDerived(ROOT, dateKey) : null;
-
-  const capture = {
+  const capture: any = {
     schema_version: "X_AGENT_CAPTURE_v1",
     owner: { handle: "unknown", timezone: "America/New_York" },
     locks_ref: "../locks/X_AGENT_LOCKS_v1.json",
@@ -127,6 +149,10 @@ function main() {
       drift_flags: derivedFromFile?.drift_flags || []
     }
   };
+
+  if (totalsOnly) {
+    capture.totals = totals;
+  }
 
   const runsDir = path.join(ROOT, "x_agent", "runs");
   fs.mkdirSync(runsDir, { recursive: true });

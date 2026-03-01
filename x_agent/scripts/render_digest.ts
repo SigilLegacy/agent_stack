@@ -37,7 +37,7 @@ function loadJson(p: string) {
 }
 
 function quote(s: string, max = 180) {
-  const oneLine = s.replace(/\s+/g, " ").trim();
+  const oneLine = (s || "").replace(/\s+/g, " ").trim();
   return oneLine.length > max ? oneLine.slice(0, max - 1) + "\u2026" : oneLine;
 }
 
@@ -76,31 +76,36 @@ function main() {
   const locks = loadJson(locksPath) as Locks;
   const capture = loadJson(absCap);
 
-  const items: Item[] = (capture.items || []) as Item[];
-  const posts = items.filter(i => i.post_type === "post");
-  const replies = items.filter(i => i.post_type === "reply");
-
-  const topPostsByImpr = [...posts]
-    .filter(i => isAvail(i.metrics.impressions))
-    .sort(byMetricDesc(i => safeNum(i.metrics.impressions)))
-    .slice(0, 5);
-
-  const topRepliesByImpr = [...replies]
-    .filter(i => isAvail(i.metrics.impressions))
-    .sort(byMetricDesc(i => safeNum(i.metrics.impressions)))
-    .slice(0, 5);
-
-  const topPostsByBm = [...posts]
-    .filter(i => isAvail(i.metrics.bookmarks))
-    .sort(byMetricDesc(i => safeNum(i.metrics.bookmarks)))
-    .slice(0, 5);
-
-  const topRepliesByBm = [...replies]
-    .filter(i => isAvail(i.metrics.bookmarks))
-    .sort(byMetricDesc(i => safeNum(i.metrics.bookmarks)))
-    .slice(0, 5);
-
   const endDate = path.basename(absCap).replace("capture_", "").replace(".json", "");
+
+  const items: Item[] = Array.isArray(capture.items) ? (capture.items as Item[]) : [];
+  const postsFromItems = items.filter(i => i.post_type === "post");
+  const repliesFromItems = items.filter(i => i.post_type === "reply");
+
+  const totals = capture.totals || null;
+  const postsCount: number = totals?.posts ?? postsFromItems.length;
+  const repliesCount: number = totals?.replies ?? repliesFromItems.length;
+  const itemsCount: number = totals ? postsCount + repliesCount : items.length;
+
+  const topPostsByImpr = [...postsFromItems]
+    .filter(i => isAvail(i.metrics.impressions))
+    .sort(byMetricDesc(i => safeNum(i.metrics.impressions)))
+    .slice(0, 5);
+
+  const topRepliesByImpr = [...repliesFromItems]
+    .filter(i => isAvail(i.metrics.impressions))
+    .sort(byMetricDesc(i => safeNum(i.metrics.impressions)))
+    .slice(0, 5);
+
+  const topPostsByBm = [...postsFromItems]
+    .filter(i => isAvail(i.metrics.bookmarks))
+    .sort(byMetricDesc(i => safeNum(i.metrics.bookmarks)))
+    .slice(0, 5);
+
+  const topRepliesByBm = [...repliesFromItems]
+    .filter(i => isAvail(i.metrics.bookmarks))
+    .sort(byMetricDesc(i => safeNum(i.metrics.bookmarks)))
+    .slice(0, 5);
 
   const derived = capture.derived || {};
   const judgmentFrames = Array.isArray(derived.judgment_frames) ? derived.judgment_frames : [];
@@ -109,8 +114,8 @@ function main() {
 
   const er = locks.export_readiness;
 
-  const replyMinMet = replies.length >= er.min_reply_captures;
-  const postMinMet = posts.length >= er.min_post_captures;
+  const replyMinMet = repliesCount >= er.min_reply_captures;
+  const postMinMet = postsCount >= er.min_post_captures;
   const judgmentMinMet = judgmentFrames.length >= er.min_judgment_frames;
   const omissionMinMet = deliberateOmissions.length >= er.min_deliberate_omissions;
 
@@ -118,8 +123,8 @@ function main() {
   const bulletsOnly = er.output_shape_bullets_only === true;
 
   const missing: string[] = [];
-  if (!replyMinMet) missing.push(`replies: need ${er.min_reply_captures}, have ${replies.length}`);
-  if (!postMinMet) missing.push(`posts: need ${er.min_post_captures}, have ${posts.length}`);
+  if (!replyMinMet) missing.push(`replies: need ${er.min_reply_captures}, have ${repliesCount}`);
+  if (!postMinMet) missing.push(`posts: need ${er.min_post_captures}, have ${postsCount}`);
   if (!judgmentMinMet) missing.push(`judgment_frames: need ${er.min_judgment_frames}, have ${judgmentFrames.length}`);
   if (!omissionMinMet) missing.push(`deliberate_omissions: need ${er.min_deliberate_omissions}, have ${deliberateOmissions.length}`);
   if (!driftPassed) missing.push("drift_check: drift flags present");
@@ -137,14 +142,15 @@ function main() {
     schema_version: "X_AGENT_WEEKLY_DIGEST_v1",
     locks_ref: "../locks/X_AGENT_LOCKS_v1.json",
     window: {
-      start_date: "Unknown",
+      start_date: capture.window?.start_date || "Unknown",
       end_date: endDate,
       rolling_days_reference: 14
     },
     inputs_summary: {
-      items_ingested: { value: items.length, label: "Exact" as MetricLabel },
-      replies_ingested: { value: replies.length, label: "Exact" as MetricLabel },
-      posts_ingested: { value: posts.length, label: "Exact" as MetricLabel }
+      mode: totals ? "totals_only" : "items",
+      items_ingested: { value: itemsCount, label: "Exact" as MetricLabel },
+      replies_ingested: { value: repliesCount, label: "Exact" as MetricLabel },
+      posts_ingested: { value: postsCount, label: "Exact" as MetricLabel }
     },
     top_items: {
       replies_by_impressions: topRepliesByImpr.map(i => ({

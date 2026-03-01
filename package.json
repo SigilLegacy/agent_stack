@@ -3,11 +3,14 @@
   "version": "1.0.0",
   "private": true,
   "description": "X Agent — judgment preservation and weekly digest pipeline",
-  "scripts": {
-    "x:ingest": "npx tsx x_agent/scripts/ingest_weekly.ts",
-    "x:digest": "npx tsx x_agent/scripts/render_digest.ts",
-    "x:week": "npx tsx x_agent/scripts/run_week.ts"
-  },
+"scripts": {
+  "x:ingest": "npx tsx x_agent/scripts/ingest_weekly.ts",
+  "x:digest": "npx tsx x_agent/scripts/render_digest.ts",
+  "x:week": "npx tsx x_agent/scripts/run_week.ts",
+  "x:totals": "npx tsx x_agent/scripts/set_totals.ts",
+  "x:wt": "npx tsx x_agent/scripts/week_totals.ts",
+  "x:derived": "npx tsx x_agent/scripts/set_derived.ts"
+},
   "dependencies": {
     "tsx": "^4.0.0"
   }

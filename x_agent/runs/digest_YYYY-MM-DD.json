@@ -37,7 +37,7 @@
       "post_captures_min_met": false,
       "judgment_frames_min_met": false,
       "deliberate_omissions_min_met": false,
-      "drift_check_passed": false,
+      "drift_check_passed": true,
       "output_shape_bullets_only": true
     }
   }
