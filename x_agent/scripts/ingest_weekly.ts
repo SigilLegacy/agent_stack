@@ -28,6 +28,12 @@ function makeId(prefix: string, ts: string, i: number) {
   return `${prefix}_${safe}_${i}`;
 }
 
+function inferEndDateFromInputPath(inputPath: string): string | null {
+  const base = path.basename(inputPath);
+  const m = base.match(/^week_(\d{4}-\d{2}-\d{2})\.json$/);
+  return m ? m[1] : null;
+}
+
 function main() {
   const inputPathArg = process.argv[2];
 
@@ -36,7 +42,8 @@ function main() {
     process.exit(1);
   }
 
-  const absIn = path.resolve(process.cwd(), inputPathArg);
+  const ROOT = process.cwd();
+  const absIn = path.resolve(ROOT, inputPathArg);
   if (!fs.existsSync(absIn)) {
     console.error(`Input file not found: ${absIn}`);
     process.exit(1);
@@ -81,7 +88,8 @@ function main() {
     };
   });
 
-  const endDate = raw.window?.end_date || "unknown";
+  const inferred = inferEndDateFromInputPath(absIn);
+  const endDate = inferred || raw.window?.end_date || "unknown";
 
   const capture = {
     schema_version: "X_AGENT_CAPTURE_v1",
@@ -92,7 +100,7 @@ function main() {
     derived: { judgment_frames: [], deliberate_omissions: [], drift_flags: [] }
   };
 
-  const runsDir = path.join(process.cwd(), "x_agent", "runs");
+  const runsDir = path.join(ROOT, "x_agent", "runs");
   fs.mkdirSync(runsDir, { recursive: true });
 
   const outFile = path.join(runsDir, `capture_${endDate}.json`);
