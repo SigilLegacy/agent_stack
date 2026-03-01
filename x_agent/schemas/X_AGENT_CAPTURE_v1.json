@@ -1,0 +1,28 @@
+{
+  "schema_version": "X_AGENT_CAPTURE_v1",
+  "owner": {
+    "handle": "string",
+    "timezone": "America/New_York"
+  },
+  "locks_ref": "../locks/X_AGENT_LOCKS_v1.json",
+  "time_window": {
+    "rolling_days": 14
+  },
+  "allow_list": {
+    "store_only_allow_list": true,
+    "allowed_fields": [
+      "item_id", "post_type", "timestamp_et", "text",
+      "context_parent_url", "context_account_handle",
+      "media_type", "metrics_impressions", "metrics_replies",
+      "metrics_likes", "metrics_reposts", "metrics_bookmarks",
+      "classification_archetype", "classification_topic",
+      "outlier_is_outlier", "outlier_reason", "notes"
+    ]
+  },
+  "items": [],
+  "derived": {
+    "judgment_frames": [],
+    "deliberate_omissions": [],
+    "drift_flags": []
+  }
+}

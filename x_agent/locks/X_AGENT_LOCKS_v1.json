@@ -1,0 +1,40 @@
+{
+  "lock_version": "X_AGENT_LOCKS_v1",
+  "objective_contract": "Maximize high-signal inbound relevance on X by compounding judgment-dense replies that attract builders, operators, and system thinkers, without increasing posting volume or sacrificing voice integrity.",
+  "negative_scope": {
+    "no_generate_posts": true,
+    "no_scheduling": true,
+    "no_auto_replying": true,
+    "no_trend_chasing": true,
+    "no_tone_smoothing": true,
+    "no_growth_hacks": true,
+    "no_advice_injection": true
+  },
+  "voice_invariants": {
+    "preserve_sentence_variability": true,
+    "prefer_declarative_unfinished": true,
+    "no_instructional_framing": true,
+    "no_cta_language": true,
+    "no_motivational_phrasing": true,
+    "no_explanation_in_summary": true
+  },
+  "time_window_days": 14,
+  "source_hierarchy": ["replies", "posts"],
+  "never_store": [
+    "dms",
+    "drafts",
+    "off_platform_context",
+    "other_peoples_content_fulltext",
+    "raw_screenshots",
+    "emotion_inference",
+    "audience_profiling"
+  ],
+  "export_readiness": {
+    "min_reply_captures": 12,
+    "min_post_captures": 5,
+    "min_judgment_frames": 3,
+    "min_deliberate_omissions": 2,
+    "drift_check_required": true,
+    "output_shape_bullets_only": true
+  }
+}
