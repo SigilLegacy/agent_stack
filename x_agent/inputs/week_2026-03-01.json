@@ -1,0 +1,28 @@
+{
+  "window": {
+    "start_date": "2026-02-23",
+    "end_date": "2026-03-01"
+  },
+  "posts": [
+    {
+      "timestamp_et": "2026-02-26T00:00:00",
+      "text": "Bioenvironmental Engineering...",
+      "impressions": 326,
+      "likes": 65,
+      "replies": 9,
+      "reposts": 1,
+      "bookmarks": 0
+    }
+  ],
+  "replies": [
+    {
+      "timestamp_et": "2026-02-04T00:00:00",
+      "text": "Mine",
+      "impressions": 6500,
+      "likes": 1,
+      "replies": 1,
+      "reposts": 0,
+      "bookmarks": 0
+    }
+  ]
+}
