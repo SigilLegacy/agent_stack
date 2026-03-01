@@ -20,6 +20,18 @@ type Item = {
   classification: { archetype: string; topic: string };
 };
 
+type Locks = {
+  lock_version: string;
+  export_readiness: {
+    min_reply_captures: number;
+    min_post_captures: number;
+    min_judgment_frames: number;
+    min_deliberate_omissions: number;
+    drift_check_required: boolean;
+    output_shape_bullets_only: boolean;
+  };
+};
+
 function loadJson(p: string) {
   return JSON.parse(fs.readFileSync(p, "utf8"));
 }
@@ -48,15 +60,23 @@ function main() {
     process.exit(1);
   }
 
-  const absCap = path.resolve(process.cwd(), capturePathArg);
+  const ROOT = process.cwd();
+  const absCap = path.resolve(ROOT, capturePathArg);
   if (!fs.existsSync(absCap)) {
     console.error(`Capture file not found: ${absCap}`);
     process.exit(1);
   }
 
-  const capture = loadJson(absCap);
-  const items: Item[] = (capture.items || []) as Item[];
+  const locksPath = path.join(ROOT, "x_agent", "locks", "X_AGENT_LOCKS_v1.json");
+  if (!fs.existsSync(locksPath)) {
+    console.error(`Locks file not found: ${locksPath}`);
+    process.exit(1);
+  }
 
+  const locks = loadJson(locksPath) as Locks;
+  const capture = loadJson(absCap);
+
+  const items: Item[] = (capture.items || []) as Item[];
   const posts = items.filter(i => i.post_type === "post");
   const replies = items.filter(i => i.post_type === "reply");
 
@@ -81,6 +101,37 @@ function main() {
     .slice(0, 5);
 
   const endDate = path.basename(absCap).replace("capture_", "").replace(".json", "");
+
+  const derived = capture.derived || {};
+  const judgmentFrames = Array.isArray(derived.judgment_frames) ? derived.judgment_frames : [];
+  const deliberateOmissions = Array.isArray(derived.deliberate_omissions) ? derived.deliberate_omissions : [];
+  const driftFlags = Array.isArray(derived.drift_flags) ? derived.drift_flags : [];
+
+  const er = locks.export_readiness;
+
+  const replyMinMet = replies.length >= er.min_reply_captures;
+  const postMinMet = posts.length >= er.min_post_captures;
+  const judgmentMinMet = judgmentFrames.length >= er.min_judgment_frames;
+  const omissionMinMet = deliberateOmissions.length >= er.min_deliberate_omissions;
+
+  const driftPassed = er.drift_check_required ? driftFlags.length === 0 : true;
+  const bulletsOnly = er.output_shape_bullets_only === true;
+
+  const missing: string[] = [];
+  if (!replyMinMet) missing.push(`replies: need ${er.min_reply_captures}, have ${replies.length}`);
+  if (!postMinMet) missing.push(`posts: need ${er.min_post_captures}, have ${posts.length}`);
+  if (!judgmentMinMet) missing.push(`judgment_frames: need ${er.min_judgment_frames}, have ${judgmentFrames.length}`);
+  if (!omissionMinMet) missing.push(`deliberate_omissions: need ${er.min_deliberate_omissions}, have ${deliberateOmissions.length}`);
+  if (!driftPassed) missing.push("drift_check: drift flags present");
+  if (!bulletsOnly) missing.push("output_shape_bullets_only: required by locks");
+
+  const allRequiredPass =
+    replyMinMet &&
+    postMinMet &&
+    judgmentMinMet &&
+    omissionMinMet &&
+    driftPassed &&
+    bulletsOnly;
 
   const digest = {
     schema_version: "X_AGENT_WEEKLY_DIGEST_v1",
@@ -138,23 +189,24 @@ function main() {
       }))
     },
     pattern_notes: [],
-    judgment_frames: [],
-    deliberate_omissions: [],
-    drift_report: [],
+    judgment_frames: judgmentFrames,
+    deliberate_omissions: deliberateOmissions,
+    drift_report: driftFlags,
     export_readiness: {
-      ready: false,
+      ready: allRequiredPass,
       checks: {
-        reply_captures_min_met: false,
-        post_captures_min_met: false,
-        judgment_frames_min_met: false,
-        deliberate_omissions_min_met: false,
-        drift_check_passed: false,
-        output_shape_bullets_only: true
-      }
+        reply_captures_min_met: replyMinMet,
+        post_captures_min_met: postMinMet,
+        judgment_frames_min_met: judgmentMinMet,
+        deliberate_omissions_min_met: omissionMinMet,
+        drift_check_passed: driftPassed,
+        output_shape_bullets_only: bulletsOnly
+      },
+      missing_requirements: missing
     }
   };
 
-  const runsDir = path.join(process.cwd(), "x_agent", "runs");
+  const runsDir = path.join(ROOT, "x_agent", "runs");
   fs.mkdirSync(runsDir, { recursive: true });
 
   const outFile = path.join(runsDir, `digest_${endDate}.json`);
