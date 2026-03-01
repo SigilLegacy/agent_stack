@@ -1,0 +1,17 @@
+{
+  "schema_version": "X_AGENT_CAPTURE_v1",
+  "owner": {
+    "handle": "unknown",
+    "timezone": "America/New_York"
+  },
+  "locks_ref": "../locks/X_AGENT_LOCKS_v1.json",
+  "time_window": {
+    "rolling_days": 14
+  },
+  "items": [],
+  "derived": {
+    "judgment_frames": [],
+    "deliberate_omissions": [],
+    "drift_flags": []
+  }
+}

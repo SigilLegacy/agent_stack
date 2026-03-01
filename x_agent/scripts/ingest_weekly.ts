@@ -29,13 +29,19 @@ function makeId(prefix: string, ts: string, i: number) {
 }
 
 function main() {
-  const inputPath = process.argv[2];
-  if (!inputPath) {
-    console.error("Usage: npx tsx agent_stack/x_agent/scripts/ingest_weekly.ts <inputs/week_YYYY-MM-DD.json>");
+  const inputPathArg = process.argv[2];
+
+  if (!inputPathArg) {
+    console.error("Usage: npx tsx x_agent/scripts/ingest_weekly.ts <x_agent/inputs/week_YYYY-MM-DD.json>");
     process.exit(1);
   }
 
-  const absIn = path.resolve(inputPath);
+  const absIn = path.resolve(process.cwd(), inputPathArg);
+  if (!fs.existsSync(absIn)) {
+    console.error(`Input file not found: ${absIn}`);
+    process.exit(1);
+  }
+
   const raw = JSON.parse(fs.readFileSync(absIn, "utf8"));
 
   const all: RawItem[] = [
@@ -75,6 +81,8 @@ function main() {
     };
   });
 
+  const endDate = raw.window?.end_date || "unknown";
+
   const capture = {
     schema_version: "X_AGENT_CAPTURE_v1",
     owner: { handle: "unknown", timezone: "America/New_York" },
@@ -84,10 +92,10 @@ function main() {
     derived: { judgment_frames: [], deliberate_omissions: [], drift_flags: [] }
   };
 
-  const outDir = path.resolve("agent_stack/x_agent/runs");
-  fs.mkdirSync(outDir, { recursive: true });
+  const runsDir = path.join(process.cwd(), "x_agent", "runs");
+  fs.mkdirSync(runsDir, { recursive: true });
 
-  const outFile = path.join(outDir, `capture_${raw.window?.end_date || "unknown"}.json`);
+  const outFile = path.join(runsDir, `capture_${endDate}.json`);
   fs.writeFileSync(outFile, JSON.stringify(capture, null, 2), "utf8");
 
   console.log(`Wrote: ${outFile}`);

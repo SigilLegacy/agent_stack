@@ -42,15 +42,19 @@ function safeNum(m: LabeledMetric) {
 }
 
 function main() {
-  const capturePath = process.argv[2];
-  if (!capturePath) {
-    console.error("Usage: npx tsx agent_stack/x_agent/scripts/render_digest.ts <runs/capture_*.json>");
+  const capturePathArg = process.argv[2];
+  if (!capturePathArg) {
+    console.error("Usage: npx tsx x_agent/scripts/render_digest.ts <x_agent/runs/capture_YYYY-MM-DD.json>");
     process.exit(1);
   }
 
-  const absCap = path.resolve(capturePath);
-  const capture = loadJson(absCap);
+  const absCap = path.resolve(process.cwd(), capturePathArg);
+  if (!fs.existsSync(absCap)) {
+    console.error(`Capture file not found: ${absCap}`);
+    process.exit(1);
+  }
 
+  const capture = loadJson(absCap);
   const items: Item[] = (capture.items || []) as Item[];
 
   const posts = items.filter(i => i.post_type === "post");
@@ -76,12 +80,14 @@ function main() {
     .sort(byMetricDesc(i => safeNum(i.metrics.bookmarks)))
     .slice(0, 5);
 
+  const endDate = path.basename(absCap).replace("capture_", "").replace(".json", "");
+
   const digest = {
     schema_version: "X_AGENT_WEEKLY_DIGEST_v1",
     locks_ref: "../locks/X_AGENT_LOCKS_v1.json",
     window: {
       start_date: "Unknown",
-      end_date: path.basename(absCap).replace("capture_", "").replace(".json", ""),
+      end_date: endDate,
       rolling_days_reference: 14
     },
     inputs_summary: {
@@ -148,10 +154,10 @@ function main() {
     }
   };
 
-  const outDir = path.resolve("agent_stack/x_agent/outputs");
-  fs.mkdirSync(outDir, { recursive: true });
+  const runsDir = path.join(process.cwd(), "x_agent", "runs");
+  fs.mkdirSync(runsDir, { recursive: true });
 
-  const outFile = path.join(outDir, `digest_${digest.window.end_date}.json`);
+  const outFile = path.join(runsDir, `digest_${endDate}.json`);
   fs.writeFileSync(outFile, JSON.stringify(digest, null, 2), "utf8");
 
   console.log(`Wrote: ${outFile}`);

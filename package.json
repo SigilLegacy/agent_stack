@@ -4,9 +4,9 @@
   "private": true,
   "description": "X Agent — judgment preservation and weekly digest pipeline",
   "scripts": {
-    "x:ingest": "npx tsx agent_stack/x_agent/scripts/ingest_weekly.ts",
-    "x:digest": "npx tsx agent_stack/x_agent/scripts/render_digest.ts",
-    "x:week": "npx tsx agent_stack/x_agent/scripts/run_week.ts"
+    "x:ingest": "npx tsx x_agent/scripts/ingest_weekly.ts",
+    "x:digest": "npx tsx x_agent/scripts/render_digest.ts",
+    "x:week": "npx tsx x_agent/scripts/run_week.ts"
   },
   "dependencies": {
     "tsx": "^4.0.0"

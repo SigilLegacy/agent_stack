@@ -1,0 +1,44 @@
+{
+  "schema_version": "X_AGENT_WEEKLY_DIGEST_v1",
+  "locks_ref": "../locks/X_AGENT_LOCKS_v1.json",
+  "window": {
+    "start_date": "Unknown",
+    "end_date": "YYYY-MM-DD",
+    "rolling_days_reference": 14
+  },
+  "inputs_summary": {
+    "items_ingested": {
+      "value": 0,
+      "label": "Exact"
+    },
+    "replies_ingested": {
+      "value": 0,
+      "label": "Exact"
+    },
+    "posts_ingested": {
+      "value": 0,
+      "label": "Exact"
+    }
+  },
+  "top_items": {
+    "replies_by_impressions": [],
+    "posts_by_impressions": [],
+    "replies_by_bookmarks": [],
+    "posts_by_bookmarks": []
+  },
+  "pattern_notes": [],
+  "judgment_frames": [],
+  "deliberate_omissions": [],
+  "drift_report": [],
+  "export_readiness": {
+    "ready": false,
+    "checks": {
+      "reply_captures_min_met": false,
+      "post_captures_min_met": false,
+      "judgment_frames_min_met": false,
+      "deliberate_omissions_min_met": false,
+      "drift_check_passed": false,
+      "output_shape_bullets_only": true
+    }
+  }
+}
