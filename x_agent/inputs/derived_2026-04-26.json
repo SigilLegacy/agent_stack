@@ -1,0 +1,27 @@
+{
+  "judgment_frames": [
+    {
+      "id": "jf_2026-04-26_1",
+      "note": "placeholder"
+    },
+    {
+      "id": "jf_2026-04-26_2",
+      "note": "placeholder"
+    },
+    {
+      "id": "jf_2026-04-26_3",
+      "note": "placeholder"
+    }
+  ],
+  "deliberate_omissions": [
+    {
+      "id": "do_2026-04-26_1",
+      "note": "placeholder"
+    },
+    {
+      "id": "do_2026-04-26_2",
+      "note": "placeholder"
+    }
+  ],
+  "drift_flags": []
+}
